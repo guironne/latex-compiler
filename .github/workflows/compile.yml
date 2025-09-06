@@ -2,6 +2,15 @@ name: 🚀 Compiler LaTeX Rapide
 
 on:
   workflow_dispatch:
+    inputs:
+      latex_content:
+        description: 'Contenu LaTeX encodé en base64'
+        required: true
+        type: string
+      timestamp:
+        description: 'Timestamp du déclenchement'
+        required: false
+        type: string
 
 jobs:
   compile:
