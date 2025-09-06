@@ -30,7 +30,8 @@ jobs:
             texlive-luatex \
             texlive-base \
             texlive-fonts-recommended \
-            texlive-latex-base
+            texlive-latex-base \
+            texlive-lang-french  # ← Ajouter cette ligne
         
         echo "Vérification..."
         lualatex --version
