@@ -26,8 +26,38 @@ jobs:
         echo "Vérification..."
         lualatex --version
 
-    - name: 📤 Upload PDF
+    - name: Créer le fichier de test
+      run: |
+        echo '\documentclass{article}' > test.tex
+        echo '\begin{document}' >> test.tex
+        echo 'Hello World! Compilation réussie!' >> test.tex
+        echo '\end{document}' >> test.tex
+        
+        echo "📋 Contenu du fichier :"
+        cat test.tex
+
+    - name: Compiler avec LuaLaTeX
+      run: |
+        echo "🚀 Compilation en cours..."
+        lualatex --interaction=nonstopmode test.tex
+        
+        echo "📊 Résultat :"
+        ls -la
+
+    - name: Vérifier le PDF
+      run: |
+        if [ -f "test.pdf" ]; then
+            echo "✅ SUCCÈS ! PDF créé avec succès!"
+            echo "📏 Taille : $(du -h test.pdf | cut -f1)"
+        else
+            echo "❌ ÉCHEC : Aucun PDF généré"
+            echo "🔍 Listing des fichiers :"
+            ls -la
+            exit 1
+        fi
+
+    - name: Télécharger le PDF
       uses: actions/upload-artifact@v4
       with:
-        name: quick-pdf
+        name: document-pdf
         path: test.pdf
