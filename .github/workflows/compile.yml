@@ -1,0 +1,85 @@
+name: 🖋️ Compilateur LaTeX
+
+on:
+  repository_dispatch:
+    types: [compile-latex]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  compile-latex:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: 🚀 Checkout du code
+      uses: actions/checkout@v4
+
+    - name: 📦 Vérifier LuaLaTeX
+      run: |
+        echo "🔍 Vérification des compilateurs..."
+        which pdflatex || echo "pdflatex: non installé"
+        which lualatex || echo "lualatex: non installé"
+        which xelatex  || echo "xelatex: non installé"
+        
+        echo "📊 Versions disponibles :"
+        pdflatex --version || true
+        lualatex --version || true
+        xelatex --version  || true
+
+    - name: 🎯 Installer LuaLaTeX (si nécessaire)
+      run: |
+        if ! command -v lualatex &> /dev/null; then
+            echo "📦 Installation de LuaLaTeX..."
+            sudo apt-get update
+            sudo apt-get install -y texlive-luatex texlive-fonts-recommended
+        else
+            echo "✅ LuaLaTeX est déjà installé"
+        fi
+
+    - name: 📄 Créer le fichier LaTeX
+      run: |
+        echo "📝 Décodage du contenu LaTeX..."
+        echo "${{ github.event.client_payload.latex_content }}" | base64 -d > document.tex
+        
+        echo "📋 Aperçu du fichier :"
+        head -n 5 document.tex
+        echo "..."
+        wc -l document.tex
+
+    - name: ⚙️ Compiler avec LuaLaTeX
+      run: |
+        echo "🚀 Compilation en cours..."
+        lualatex --interaction=nonstopmode --halt-on-error document.tex
+        
+        if [ -f "document.pdf" ]; then
+            echo "✅ SUCCÈS : PDF généré !"
+            echo "📊 Taille : $(du -h document.pdf | cut -f1)"
+            echo "📄 Pages : $(pdfinfo document.pdf 2>/dev/null | grep Pages | awk '{print $2}' || echo 'N/A')"
+        else
+            echo "❌ ÉCHEC : Aucun PDF généré"
+            echo "📜 Logs de compilation :"
+            cat document.log || true
+            exit 1
+        fi
+
+    - name: 📤 Uploader le PDF
+      uses: actions/upload-artifact@v3
+      with:
+        name: document-pdf
+        path: document.pdf
+        retention-days: 1
+
+    - name: 💾 Sauvegarder pour la démo
+      run: |
+        # Copier pour GitHub Pages
+        cp document.pdf sample.pdf || true
+        
+        # Commit et push
+        git config --local user.email "github-actions@github.com"
+        git config --local user.name "GitHub Actions"
+        git add sample.pdf || true
+        git commit -m "📄 Update sample PDF [skip ci]" || echo "Aucun changement"
+        git push || echo "Push non nécessaire"
