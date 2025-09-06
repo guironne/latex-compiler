@@ -70,6 +70,9 @@ jobs:
         echo "✅ Fichier créé avec succès"
         echo "📊 Statistiques :"
         wc -l document.tex
+        
+        echo "📋 Contenu du fichier :"
+        cat document.tex
 
     - name: Compiler avec LuaLaTeX
       run: |
