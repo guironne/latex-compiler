@@ -1,24 +1,59 @@
 name: Compiler LaTeX
-on: workflow_dispatch
+
+on:
+  workflow_dispatch:
+
 jobs:
   compile:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Installer LaTeX
-      run: sudo apt-get install -y texlive-luatex
-
-    - name: Créer fichier test
+    - name: Installer LaTeX COMPLET
       run: |
-        echo '\documentclass{article}\begin{document}Hello World!\end{document}' > test.tex
+        echo "📦 Installation de TexLive COMPLET..."
+        sudo apt-get update
+        sudo apt-get install -y texlive-full
+        
+        echo "🔍 Vérification de l'installation..."
+        which lualatex
+        lualatex --version
 
-    - name: Compiler
-      run: lualatex --interaction=nonstopmode test.tex
+    - name: Créer le fichier de test
+      run: |
+        echo '\documentclass{article}' > test.tex
+        echo '\begin{document}' >> test.tex
+        echo 'Hello World! Compilation réussie!' >> test.tex
+        echo '\end{document}' >> test.tex
+        
+        echo "📋 Contenu du fichier :"
+        cat test.tex
 
-    - name: Upload PDF
+    - name: Compiler avec LuaLaTeX
+      run: |
+        echo "🚀 Compilation en cours..."
+        lualatex --interaction=nonstopmode test.tex
+        
+        echo "📊 Résultat :"
+        ls -la
+
+    - name: Vérifier le PDF
+      run: |
+        if [ -f "test.pdf" ]; then
+            echo "✅ SUCCÈS ! PDF créé avec succès!"
+            echo "📏 Taille : $(du -h test.pdf | cut -f1)"
+        else
+            echo "❌ ÉCHEC : Aucun PDF généré"
+            echo "🔍 Listing des fichiers :"
+            ls -la
+            exit 1
+        fi
+
+    - name: Télécharger le PDF
       uses: actions/upload-artifact@v4
       with:
-        name: mon-pdf
+        name: document-pdf
         path: test.pdf
