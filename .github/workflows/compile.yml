@@ -49,20 +49,20 @@ jobs:
       run: |
         echo "📥 Récupération du contenu LaTeX..."
         # Décoder le contenu base64
-        echo "${{ github.event.client_payload.latex_content }}" | base64 -d > temp_content.tex
+        echo "${{ github.event.inputs.latex_content }}" | base64 -d > temp_content.tex
         
         echo "📋 Construction du document complet..."
         # Créer l'en-tête
-        echo '\documentclass{article}' > document.tex
-        echo '\usepackage[utf8]{inputenc}' >> document.tex
-        echo '\usepackage[french]{babel}' >> document.tex
-        echo '\begin{document}' >> document.tex
+        # echo '\documentclass{article}' > document.tex
+        # echo '\usepackage[utf8]{inputenc}' >> document.tex
+        # echo '\usepackage[french]{babel}' >> document.tex
+        # echo '\begin{document}' >> document.tex
         
         # Ajouter le contenu utilisateur
         cat temp_content.tex >> document.tex
         
         # Ajouter la fin du document
-        echo '\end{document}' >> document.tex
+        # echo '\end{document}' >> document.tex
         
         # Nettoyer
         rm temp_content.tex
