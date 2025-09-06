@@ -3,80 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compilateur LaTeX</title>
+    <title>Compilateur LaTeX en Ligne</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
             color: #333;
-            text-align: center;
         }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .editor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        @media (max-width: 968px) {
+            .editor-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+        
+        h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 400px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
         button {
-            background: #007acc;
+            background: linear-gradient(135deg, #007bff, #0056b3);
             color: white;
             padding: 15px 30px;
             border: none;
-            border-radius: 5px;
-            font-size: 18px;
+            border-radius: 10px;
             cursor: pointer;
-            display: block;
-            margin: 20px auto;
+            font-size: 18px;
+            font-weight: bold;
+            transition: transform 0.2s;
+            width: 100%;
         }
+        
         button:hover {
-            background: #005a9e;
+            transform: translateY(-2px);
         }
-        .info {
-            background: #e7f3ff;
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        #output {
+            min-height: 300px;
+            background: white;
+            border-radius: 10px;
+            border: 2px dashed #ddd;
+            padding: 20px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #loading {
+            display: flex;
+            align-items: center;
+            gap: 15px;
             padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+            margin: 15px 0;
+        }
+        
+        .pdf-viewer {
+            width: 100%;
+            height: 500px;
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🖋️ Compilateur LaTeX</h1>
-        
-        <div class="info">
-            <p>Ce site utilise GitHub Actions pour compiler du LaTeX.</p>
+        <header>
+            <h1>🖋️ Compilateur LaTeX en Ligne</h1>
+            <p style="text-align: center; color: #666;">Compilez du code LaTeX directement depuis votre navigateur</p>
+        </header>
+
+        <div class="editor-container">
+            <div class="section">
+                <h3>📝 Votre code LaTeX :</h3>
+                <textarea id="latexInput" placeholder="\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+
+\begin{document}
+
+\section{Introduction}
+Tapez votre code LaTeX ici...
+
+\end{document}"></textarea>
+                
+                <h3>🔑 Token GitHub (optionnel) :</h3>
+                <input type="password" id="githubToken" placeholder="ghp_votre_token_ici">
+                <small style="color: #666;">Nécessaire pour les compilations automatiques</small>
+                
+                <button id="compileBtn" onclick="compileLatex()">
+                    🚀 Compiler le PDF
+                </button>
+                
+                <div id="loading" class="hidden">
+                    <div class="spinner"></div>
+                    <span>Compilation en cours sur GitHub Actions...</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>📄 Résultat :</h3>
+                <div id="output">
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <p>Le PDF apparaîtra ici après compilation</p>
+                        <small>⏱️ La compilation prend environ 2-3 minutes</small>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <button onclick="lancerCompilation()">
-            🚀 Lancer la compilation de test
-        </button>
-
-        <p>Le PDF sera disponible dans l'onglet "Actions" de votre repository GitHub.</p>
-        
-        <div class="info">
-            <h3>📋 Comment faire :</h3>
+        <div class="warning">
+            <h4>ℹ️ Comment utiliser :</h4>
             <ol>
-                <li>Cliquez sur le bouton ci-dessus</li>
-                <li>Allez sur votre repository GitHub</li>
-                <li>Onglet "Actions"</li>
-                <li>Cliquez sur le dernier workflow</li>
+                <li>Collez votre code LaTeX dans l'éditeur</li>
+                <li>Cliquez sur "Compiler le PDF"</li>
+                <li>Allez dans l'onglet <a href="https://github.com/guironne/latex-compiler/actions" target="_blank">Actions</a> de votre repository</li>
+                <li>Attendez que le workflow se termine (✓ vert)</li>
                 <li>Téléchargez le PDF dans "Artifacts"</li>
             </ol>
         </div>
     </div>
 
     <script>
-        function lancerCompilation() {
-            // Ouvre l'onglet Actions du repository
-            window.open('https://github.com/guironne/latex-compiler/actions', '_blank');
+        const CONFIG = {
+            owner: 'guironne',
+            repo: 'latex-compiler'
+        };
+
+        async function compileLatex() {
+            const input = document.getElementById('latexInput');
+            const tokenInput = document.getElementById('githubToken');
+            const compileBtn = document.getElementById('compileBtn');
+            const loading = document.getElementById('loading');
+            const output = document.getElementById('output');
+
+            if (!input.value.trim()) {
+                alert('Veuillez entrer du code LaTeX');
+                return;
+            }
+
+            const token = tokenInput.value;
             
-            alert('✅ Allez dans l\'onglet "Actions" de votre repository GitHub pour voir le résultat !');
+            compileBtn.disabled = true;
+            loading.classList.remove('hidden');
+            output.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;"><p>🚀 Lancement de la compilation...</p></div>';
+
+            try {
+                if (token) {
+                    // Tentative de compilation automatique avec l'API GitHub
+                    const response = await fetch(
+                        `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/dispatches`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `token ${token}`,
+                                'Accept': 'application/vnd.github.v3+json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                event_type: 'compile-latex',
+                                client_payload: {
+                                    latex_content: btoa(unescape(encodeURIComponent(input.value))),
+                                    timestamp: new Date().toISOString()
+                                }
+                            })
+                        }
+                    );
+
+                    if (!response.ok) throw new Error('Erreur API GitHub');
+                    
+                    output.innerHTML += '<p>✅ Workflow déclenché avec succès !</p>';
+                }
+
+                // Redirection vers l'onglet Actions
+                output.innerHTML += `
+                    <p>📊 Suivez la compilation dans l'onglet Actions :</p>
+                    <p><a href="https://github.com/${CONFIG.owner}/${CONFIG.repo}/actions" target="_blank" style="color: #007bff;">
+                        👉 Cliquez ici pour voir le statut
+                    </a></p>
+                    <p><small>Le PDF sera disponible dans "Artifacts" une fois terminé</small></p>
+                `;
+
+                // Ouvrir l'onglet Actions
+                window.open(`https://github.com/${CONFIG.owner}/${CONFIG.repo}/actions`, '_blank');
+
+            } catch (error) {
+                output.innerHTML = `
+                    <div style="color: red; text-align: center; padding: 40px;">
+                        <p>❌ Erreur : ${error.message}</p>
+                        <small>Vous pouvez toujours compiler manuellement dans l'onglet Actions</small>
+                    </div>
+                `;
+            } finally {
+                loading.classList.add('hidden');
+                compileBtn.disabled = false;
+            }
         }
+
+        // Code LaTeX par défaut
+        document.getElementById('latexInput').value = `\\documentclass{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[french]{babel}
+
+\\title{Mon Document}
+\\author{Votre Nom}
+\\date{\\today}
+
+\\begin{document}
+
+\\maketitle
+
+\\section{Introduction}
+Ce document a été compilé automatiquement par GitHub Actions !
+
+\\section{Mathématiques}
+Voici une formule : $E = mc^2$
+
+\\section{Liste}
+\\begin{itemize}
+    \\item Item 1
+    \\item Item 2
+    \\item Item 3
+\\end{itemize}
+
+\\end{document}`;
     </script>
 </body>
 </html>

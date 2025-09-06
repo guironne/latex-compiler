@@ -35,20 +35,46 @@ jobs:
         
         echo "📋 Contenu du fichier :"
         cat test.tex
+    
+    - name: 📝 Créer le fichier proprement
+      run: |
+        echo "📥 Récupération du contenu LaTeX..."
+        # Décoder le contenu base64
+        echo "${{ github.event.client_payload.latex_content }}" | base64 -d > temp_content.tex
+        
+        echo "📋 Construction du document complet..."
+        # Créer l'en-tête
+        echo '\documentclass{article}' > document.tex
+        echo '\usepackage[utf8]{inputenc}' >> document.tex
+        echo '\usepackage[french]{babel}' >> document.tex
+        echo '\begin{document}' >> document.tex
+        
+        # Ajouter le contenu utilisateur
+        cat temp_content.tex >> document.tex
+        
+        # Ajouter la fin du document
+        echo '\end{document}' >> document.tex
+        
+        # Nettoyer
+        rm temp_content.tex
+
+        echo "✅ Fichier créé avec succès"
+        echo "📊 Statistiques :"
+        wc -l document.tex
 
     - name: Compiler avec LuaLaTeX
       run: |
         echo "🚀 Compilation en cours..."
-        lualatex --interaction=nonstopmode test.tex
+        lualatex --interaction=nonstopmode document.tex
         
         echo "📊 Résultat :"
         ls -la
 
     - name: Vérifier le PDF
       run: |
-        if [ -f "test.pdf" ]; then
+        if [ -f "document.pdf" ]; then
             echo "✅ SUCCÈS ! PDF créé avec succès!"
-            echo "📏 Taille : $(du -h test.pdf | cut -f1)"
+            echo "📏 Taille : $(du -h document.pdf | cut -f1)"
         else
             echo "❌ ÉCHEC : Aucun PDF généré"
             echo "🔍 Listing des fichiers :"
@@ -60,4 +86,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: document-pdf
-        path: test.pdf
+        path: document.pdf
