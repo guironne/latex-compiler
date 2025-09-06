@@ -65,8 +65,8 @@ jobs:
             exit 1
         fi
 
-    - name: 📤 Uploader le PDF
-      uses: actions/upload-artifact@v3
+    - name: 📤 Uploader le PDF (Version corrigée)
+      uses: actions/upload-artifact@v4  # ← CHANGÉ ICI : v3 → v4
       with:
         name: document-pdf
         path: document.pdf
