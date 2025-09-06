@@ -1,85 +1,62 @@
-name: 🖋️ Compilateur LaTeX
+name: Compiler LaTeX
 
 on:
-  repository_dispatch:
-    types: [compile-latex]
-  workflow_dispatch:
-
-permissions:
-  contents: write
+  workflow_dispatch:  # Permet de lancer manuellement
 
 jobs:
-  compile-latex:
+  compile:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     
     steps:
-    - name: 🚀 Checkout du code
+    - name: Checkout
       uses: actions/checkout@v4
 
-    - name: 📦 Vérifier LuaLaTeX
+    - name: Setup LuaLaTeX
       run: |
-        echo "🔍 Vérification des compilateurs..."
-        which pdflatex || echo "pdflatex: non installé"
-        which lualatex || echo "lualatex: non installé"
-        which xelatex  || echo "xelatex: non installé"
-        
-        echo "📊 Versions disponibles :"
-        pdflatex --version || true
-        lualatex --version || true
-        xelatex --version  || true
+        sudo apt-get update
+        sudo apt-get install -y texlive-luatex
 
-    - name: 🎯 Installer LuaLaTeX (si nécessaire)
+    - name: Créer le fichier LaTeX
       run: |
-        if ! command -v lualatex &> /dev/null; then
-            echo "📦 Installation de LuaLaTeX..."
-            sudo apt-get update
-            sudo apt-get install -y texlive-luatex texlive-fonts-recommended
-        else
-            echo "✅ LuaLaTeX est déjà installé"
-        fi
-
-    - name: 📄 Créer le fichier LaTeX
-      run: |
-        echo "📝 Décodage du contenu LaTeX..."
-        echo "${{ github.event.client_payload.latex_content }}" | base64 -d > document.tex
+        cat > document.tex << 'EOF'
+        \documentclass{article}
+        \usepackage[utf8]{inputenc}
+        \usepackage[french]{babel}
         
-        echo "📋 Aperçu du fichier :"
-        head -n 5 document.tex
-        echo "..."
-        wc -l document.tex
-
-    - name: ⚙️ Compiler avec LuaLaTeX
-      run: |
-        echo "🚀 Compilation en cours..."
-        lualatex --interaction=nonstopmode --halt-on-error document.tex
+        \title{Mon Document}
+        \author{Moi}
+        \date{\today}
         
+        \begin{document}
+        
+        \maketitle
+        
+        \section{Introduction}
+        Bonjour ! Ce document a été compilé par GitHub Actions !
+        
+        \section{Test}
+        Voici une formule : $E = mc^2$
+        
+        \end{document}
+        EOF
+
+    - name: Compiler
+      run: |
+        lualatex --interaction=nonstopmode document.tex
+
+    - name: Vérifier le PDF
+      run: |
         if [ -f "document.pdf" ]; then
-            echo "✅ SUCCÈS : PDF généré !"
-            echo "📊 Taille : $(du -h document.pdf | cut -f1)"
-            echo "📄 Pages : $(pdfinfo document.pdf 2>/dev/null | grep Pages | awk '{print $2}' || echo 'N/A')"
+            echo "✅ SUCCÈS ! PDF créé."
+            ls -la document.pdf
         else
-            echo "❌ ÉCHEC : Aucun PDF généré"
-            echo "📜 Logs de compilation :"
-            cat document.log || true
+            echo "❌ ÉCHEC : Pas de PDF"
             exit 1
         fi
 
-    - name: 📤 Uploader le PDF (Version corrigée)
-      uses: actions/upload-artifact@v4  # ← CHANGÉ ICI : v3 → v4
+    - name: Sauvegarder le PDF
+      uses: actions/upload-artifact@v4
       with:
-        name: document-pdf
+        name: mon-document
         path: document.pdf
-        retention-days: 1
-
-    - name: 💾 Sauvegarder pour la démo
-      run: |
-        # Copier pour GitHub Pages
-        cp document.pdf sample.pdf || true
-        
-        # Commit et push
-        git config --local user.email "github-actions@github.com"
-        git config --local user.name "GitHub Actions"
-        git add sample.pdf || true
-        git commit -m "📄 Update sample PDF [skip ci]" || echo "Aucun changement"
-        git push || echo "Push non nécessaire"
