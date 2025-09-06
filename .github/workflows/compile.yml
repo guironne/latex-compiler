@@ -1,84 +1,24 @@
 name: Compiler LaTeX
-
-on:
-  workflow_dispatch:
-
+on: workflow_dispatch
 jobs:
   compile:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Installer LaTeX complet
+    - name: Installer LaTeX
+      run: sudo apt-get install -y texlive-luatex
+
+    - name: Créer fichier test
       run: |
-        echo "📦 Installation de LaTeX..."
-        sudo apt-get update
-        sudo apt-get install -y texlive-latex-base texlive-luatex texlive-fonts-recommended
+        echo '\documentclass{article}\begin{document}Hello World!\end{document}' > test.tex
 
-    - name: Vérifier l'installation
-      run: |
-        echo "🔍 Vérification des compilateurs..."
-        which lualatex
-        lualatex --version
+    - name: Compiler
+      run: lualatex --interaction=nonstopmode test.tex
 
-    - name: Créer le fichier LaTeX
-      run: |
-        cat > document.tex << 'EOF'
-\documentclass{article}
-\usepackage[utf8]{inputenc}
-\usepackage[french]{babel}
-
-\title{Mon Document}
-\author{GitHub Actions}
-\date{\today}
-
-\begin{document}
-
-\maketitle
-
-\section{Introduction}
-Bonjour ! Ce document a été compilé par GitHub Actions !
-
-\section{Test}
-Voici une formule mathématique : $E = mc^2$
-
-\begin{itemize}
-    \item Item 1
-    \item Item 2
-    \item Item 3
-\end{itemize}
-
-\end{document}
-EOF
-
-        echo "📋 Fichier créé :"
-        cat document.tex
-
-    - name: Compiler avec LuaLaTeX
-      run: |
-        echo "🚀 Compilation en cours..."
-        lualatex --interaction=nonstopmode document.tex
-        
-        # Deuxième passage pour les références
-        lualatex --interaction=nonstopmode document.tex
-
-    - name: Vérifier le PDF
-      run: |
-        if [ -f "document.pdf" ]; then
-            echo "✅ SUCCÈS ! PDF créé."
-            echo "📊 Taille : $(du -h document.pdf | cut -f1)"
-        else
-            echo "❌ ÉCHEC : Pas de PDF"
-            echo "📜 Contenu du dossier :"
-            ls -la
-            exit 1
-        fi
-
-    - name: Sauvegarder le PDF
+    - name: Upload PDF
       uses: actions/upload-artifact@v4
       with:
-        name: document-pdf
-        path: document.pdf
+        name: mon-pdf
+        path: test.pdf
