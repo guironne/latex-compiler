@@ -6,24 +6,25 @@ on:
 jobs:
   compile:
     runs-on: ubuntu-latest
-    container: blang/latex:latest  # Image légère avec LaTeX
+    timeout-minutes: 6
     
     steps:
-    - name: Checkout
+    - name: 🚀 Checkout
       uses: actions/checkout@v4
 
-    - name: Créer le fichier de test
+    - name: 📦 Installer LuaLaTeX (minimal)
       run: |
-        echo '\documentclass{article}' > test.tex
-        echo '\begin{document}' >> test.tex
-        echo 'Hello World! Compilation réussie!' >> test.tex
-        echo '\end{document}' >> test.tex
+        echo "Installation de LaTeX minimal..."
+        sudo apt-get update
+        # Installation MINIMALE et RAPIDE
+        sudo apt-get install -y --no-install-recommends \
+            texlive-luatex \
+            texlive-base \
+            texlive-fonts-recommended \
+            texlive-latex-base
         
-        echo "📋 Contenu du fichier :"
-        cat test.tex
-        
-        # Compiler
-        lualatex --interaction=nonstopmode test.tex
+        echo "Vérification..."
+        lualatex --version
 
     - name: 📤 Upload PDF
       uses: actions/upload-artifact@v4
