@@ -288,7 +288,7 @@ Tapez votre code LaTeX ici...
 					// Étape 2 : poller jusqu’à trouver l’artefact
 				    let artifactId = null;
 				    for (let attempt = 0; attempt < 20; attempt++) {
-					  await new Promise(r => setTimeout(r, 5000)); // attendre 5s entre tentatives
+					  await new Promise(r => setTimeout(r, 10000)); // attendre 10s entre tentatives
 
 					  const artifactsResponse = await fetch(
 					    `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/actions/artifacts`,
