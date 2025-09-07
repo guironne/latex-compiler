@@ -320,7 +320,7 @@ Tapez votre code LaTeX ici...
 					  `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/actions/artifacts/${artifactId}/zip`,
 					  {
     					headers: {
-						'Authorization': `Bearer ${CONFIG.token}`,
+						'Authorization': `Bearer ${token}`,
 						'Accept': 'application/vnd.github.v3+json'
 					    }
 					  }
