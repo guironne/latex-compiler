@@ -24,8 +24,6 @@ jobs:
     timeout-minutes: 6
     
     steps:
-    - name: 🚀 Checkout
-      uses: actions/checkout@v4
 
     - name: Créer le fichier de test
       run: |
