@@ -273,7 +273,7 @@ Tapez votre code LaTeX ici...
 							body: JSON.stringify({
 								ref: 'main',  // Branche à utiliser
 								inputs: {
-									filename,
+									file_name: filename,
 									latex_content: btoa(unescape(encodeURIComponent(input.value))),
 									timestamp: new Date().toISOString()
 								}
