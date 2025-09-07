@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compilateur LaTeX en Ligne</title>
-	<script src="https://cdn.jsdelivr.net/npm/jszip@3.11.0/dist/jszip.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -309,7 +309,7 @@ Tapez votre code LaTeX ici...
 					
 					// Étape 2 : poller jusqu’à trouver l’artefact
 				    let artifactId = null;
-				    for (let attempt = 0; attempt < 20; attempt++) {
+				    for (let attempt = 0; attempt < 30; attempt++) {
 					  await new Promise(r => setTimeout(r, 10000)); // attendre 10s entre tentatives
 
 					  const artifactsResponse = await fetch(
