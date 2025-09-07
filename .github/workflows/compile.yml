@@ -7,6 +7,10 @@ on:
         description: 'Contenu LaTeX encodé en base64'
         required: true
         type: string
+      file_name:
+        description: 'Nom de fichier'
+        required: true
+        type: string
       timestamp:
         description: 'Timestamp du déclenchement'
         required: false
