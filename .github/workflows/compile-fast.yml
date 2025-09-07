@@ -1,0 +1,106 @@
+name: 🚀 Compiler LaTeX Rapide
+
+on:
+  workflow_dispatch:
+    inputs:
+      latex_content:
+        description: 'Contenu LaTeX encodé en base64'
+        required: true
+        type: string
+      file_name:
+        description: 'Nom de fichier'
+        required: true
+        type: string
+      timestamp:
+        description: 'Timestamp du déclenchement'
+        required: false
+        type: string
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    
+    steps:
+    - name: 🚀 Checkout
+      uses: actions/checkout@v4
+
+    - name: 📦 Installer LuaLaTeX (minimal)
+      run: |
+        echo "Installation de LaTeX minimal..."
+        sudo apt-get update
+        # Installation MINIMALE et RAPIDE
+        sudo apt-get install -y --no-install-recommends \
+            texlive-luatex \
+            texlive-base \
+            texlive-fonts-recommended \
+            texlive-latex-base \
+            texlive-lang-french  # ← Ajouter cette ligne
+        
+        echo "Vérification..."
+        lualatex --version
+
+    - name: Créer le fichier de test
+      run: |
+        echo '\documentclass{article}' > test.tex
+        echo '\begin{document}' >> test.tex
+        echo 'Hello World! Compilation réussie!' >> test.tex
+        echo '\end{document}' >> test.tex
+        
+        echo "📋 Contenu du fichier :"
+        cat test.tex
+    
+    - name: 📝 Créer le fichier proprement
+      run: |
+        echo "📥 Récupération du contenu LaTeX..."
+        # Décoder le contenu base64
+        echo "${{ github.event.inputs.latex_content }}" | base64 -d > temp_content.tex
+        
+        echo "📋 Construction du document complet..."
+        # Créer l'en-tête
+        # echo '\documentclass{article}' > document.tex
+        # echo '\usepackage[utf8]{inputenc}' >> document.tex
+        # echo '\usepackage[french]{babel}' >> document.tex
+        # echo '\begin{document}' >> document.tex
+        
+        # Ajouter le contenu utilisateur
+        cat temp_content.tex >> document.tex
+        
+        # Ajouter la fin du document
+        # echo '\end{document}' >> document.tex
+        
+        # Nettoyer
+        rm temp_content.tex
+
+        echo "✅ Fichier créé avec succès"
+        echo "📊 Statistiques :"
+        wc -l document.tex
+        
+        echo "📋 Contenu du fichier :"
+        cat document.tex
+
+    - name: Compiler avec LuaLaTeX
+      run: |
+        echo "🚀 Compilation en cours..."
+        lualatex --interaction=nonstopmode document.tex
+        
+        echo "📊 Résultat :"
+        ls -la
+
+    - name: Vérifier le PDF
+      run: |
+        if [ -f "document.pdf" ]; then
+            echo "✅ SUCCÈS ! PDF créé avec succès!"
+            echo "📏 Taille : $(du -h document.pdf | cut -f1)"
+        else
+            echo "❌ ÉCHEC : Aucun PDF généré"
+            echo "🔍 Listing des fichiers :"
+            ls -la
+            exit 1
+        fi
+
+    - name: Télécharger le PDF
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ github.event.inputs.file_name }}
+        path: document.pdf
