@@ -291,7 +291,7 @@ Tapez votre code LaTeX ici...
 					  await new Promise(r => setTimeout(r, 5000)); // attendre 5s entre tentatives
 
 					  const artifactsResponse = await fetch(
-					    `https://api.github.com/repos/${owner}/${repo}/actions/artifacts`,
+					    `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/actions/artifacts`,
 					    {
 						  headers: {
 						    'Authorization': `Bearer ${token}`,
