@@ -305,10 +305,10 @@ Tapez votre code LaTeX ici...
 					  const match = artifacts.artifacts.find(a => a.name === filename);
 					  if (match) {
 					    artifactId = match.id;
-					    console.log(`Artefact trouvé ! ID: ${artifactId}`);
+						output.innerHTML += `<p>${attempt + 1}: ⏳ Artefact trouvé ! ID: ${artifactId}</p>`;	
 					    break;
 					  } else {
-					    console.log(`Tentative ${attempt + 1}: artefact pas encore dispo...`);
+						output.innerHTML += `<p>${attempt + 1}: ⏳ Vérification de l'artefact "${filename}"...</p>`;					    
 					  }
 				    }
 
