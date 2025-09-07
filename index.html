@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compilateur LaTeX en Ligne</title>
+	<script src="https://cdn.jsdelivr.net/npm/jszip@3.11.0/dist/jszip.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -232,6 +233,27 @@ Tapez votre code LaTeX ici...
             repo: 'latex-compiler'
         };
 		
+		async function downloadAndExtractPDF(blob, filename) {
+		  const zipArrayBuffer = await blob.arrayBuffer();
+		  const zip = await JSZip.loadAsync(zipArrayBuffer);
+
+		  // Cherche le fichier PDF à l'intérieur
+		  const pdfFile = Object.keys(zip.files).find(name => name.endsWith(".pdf"));
+		  if (!pdfFile) throw new Error("Aucun PDF trouvé dans le ZIP.");
+
+		  // Extraire le PDF en blob
+		  const pdfBlob = await zip.files[pdfFile].async("blob");
+
+		  // Créer le lien de téléchargement
+		  const url = URL.createObjectURL(pdfBlob);
+		  const link = document.createElement("a");
+		  link.href = url;
+		  link.download = filename; // tu peux garder ton nom généré
+		  link.textContent = `Télécharger ${filename}`;
+		  document.getElementById("links").appendChild(link);
+		  document.getElementById("links").appendChild(document.createElement("br"));
+		}
+		
 		function generateFilename(prefix = "latex", ext = "pdf") {
 		  const now = new Date();
 		  const pad = n => String(n).padStart(2, "0");
@@ -333,13 +355,7 @@ Tapez votre code LaTeX ici...
 				    const blob = await downloadResponse.blob();
 
 				    // 4 Créer un lien de téléchargement
-				    const url = URL.createObjectURL(blob);
-				    const link = document.createElement("a");
-				    link.href = url;
-				    link.download = filename;
-				    link.textContent = `Télécharger ${filename}`;
-				    document.getElementById("links").appendChild(link);
-				    document.getElementById("links").appendChild(document.createElement("br"));
+				    await downloadAndExtractPDF(blob, filename);
                 }
 
                 // Redirection vers l'onglet Actions
