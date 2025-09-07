@@ -1,4 +1,4 @@
-name: 🚀 Compiler LaTeX Rapide
+name: 🚀 Compiler LaTeX FAST
 
 on:
   workflow_dispatch:
@@ -19,26 +19,13 @@ on:
 jobs:
   compile:
     runs-on: ubuntu-latest
+     container:
+      image: blang/latex:ubuntu  # Docker officiel avec TeX Live complet (LuaLaTeX inclus)
     timeout-minutes: 6
     
     steps:
     - name: 🚀 Checkout
       uses: actions/checkout@v4
-
-    - name: 📦 Installer LuaLaTeX (minimal)
-      run: |
-        echo "Installation de LaTeX minimal..."
-        sudo apt-get update
-        # Installation MINIMALE et RAPIDE
-        sudo apt-get install -y --no-install-recommends \
-            texlive-luatex \
-            texlive-base \
-            texlive-fonts-recommended \
-            texlive-latex-base \
-            texlive-lang-french  # ← Ajouter cette ligne
-        
-        echo "Vérification..."
-        lualatex --version
 
     - name: Créer le fichier de test
       run: |
